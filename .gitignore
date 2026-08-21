@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# Local database and generated files
+*.db
+*.db-journal
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/*.local
