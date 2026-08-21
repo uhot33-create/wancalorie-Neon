@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { AuthGate } from "@/components/auth-gate";
+import { Segmented } from "@/components/dog-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,7 +24,7 @@ import {
   unitLabel,
   weightPace,
 } from "@/lib/calories";
-import type { Dog, Food } from "@/lib/types";
+import { GOALS, type Dog, type DogInput, type Food, type Goal } from "@/lib/types";
 import { cn, formatKcal, formatKg } from "@/lib/utils";
 
 export const Route = createFileRoute("/plan")({ component: PlanPage });
@@ -118,6 +119,33 @@ function PlanView() {
     );
   }
 
+  async function persistPlan(patch: Partial<DogInput>) {
+    if (!dog) return;
+    const next: DogInput = {
+      name: dog.name,
+      currentWeightKg: dog.currentWeightKg,
+      idealWeightKg: dog.idealWeightKg,
+      lifeStage: dog.lifeStage,
+      activity: dog.activity,
+      neutered: dog.neutered,
+      goal: dog.goal,
+      mealsPerDay: dog.mealsPerDay,
+      treatPct,
+      ...patch,
+    };
+    if (patch.treatPct != null) setTreatPct(patch.treatPct);
+    setSaving(true);
+    try {
+      const saved = await saveDog({ data: next });
+      setDog(saved);
+      toast.success("プランを保存しました");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "保存に失敗しました");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function persistTreatPct(next: number) {
     if (!dog) return;
     setTreatPct(next);
@@ -192,6 +220,83 @@ function PlanView() {
 
         <PaceNote pace={plan.pace} />
       </Card>
+
+      <section className="mt-6">
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-lg font-semibold">プランを変更</h2>
+          {saving && <span className="text-xs text-subtle">保存中</span>}
+        </div>
+        <p className="text-sm text-muted">
+          目標や体重を変えると、上の必要カロリーがすぐ計算し直されます。
+        </p>
+        <Card className="mt-3 space-y-5 p-5">
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium text-muted">目標</legend>
+            <Segmented
+              value={dog.goal}
+              onChange={(v) => void persistPlan({ goal: v as Goal })}
+              options={GOALS.map((g) => ({ value: g.value, label: g.label }))}
+            />
+          </fieldset>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="plan-current-kg">現在の体重 (kg)</Label>
+              <Input
+                id="plan-current-kg"
+                type="number"
+                inputMode="decimal"
+                min={0.5}
+                max={120}
+                step={0.1}
+                defaultValue={dog.currentWeightKg}
+                key={`current-${dog.currentWeightKg}`}
+                onBlur={(e) => {
+                  const n = Number(e.target.value);
+                  if (!Number.isFinite(n) || n < 0.5) return;
+                  if (n === dog.currentWeightKg) return;
+                  void persistPlan({ currentWeightKg: n });
+                }}
+                className="tabular-nums"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="plan-ideal-kg">理想体重 (kg)</Label>
+              <Input
+                id="plan-ideal-kg"
+                type="number"
+                inputMode="decimal"
+                min={0.5}
+                max={120}
+                step={0.1}
+                defaultValue={dog.idealWeightKg}
+                key={`ideal-${dog.idealWeightKg}`}
+                onBlur={(e) => {
+                  const n = Number(e.target.value);
+                  if (!Number.isFinite(n) || n < 0.5) return;
+                  if (n === dog.idealWeightKg) return;
+                  void persistPlan({ idealWeightKg: n });
+                }}
+                className="tabular-nums"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="plan-meals">1日の食事回数</Label>
+            <Segmented
+              value={String(dog.mealsPerDay)}
+              onChange={(v) => void persistPlan({ mealsPerDay: Number(v) })}
+              options={[
+                { value: "1", label: "1回" },
+                { value: "2", label: "2回" },
+                { value: "3", label: "3回" },
+                { value: "4", label: "4回" },
+              ]}
+            />
+          </div>
+        </Card>
+      </section>
 
       <section className="mt-6">
         <h2 className="font-display text-lg font-semibold">ごはんとおやつ</h2>
@@ -301,11 +406,11 @@ function PlanView() {
 
       <p className="mt-6 text-center text-xs leading-relaxed text-subtle">
         計算は一般的なRER / MER（70 × 体重^0.75 × 係数）です。病気や特別食がある場合は獣医師の指示を優先してください。
-        体重や活動量は
+        体重や活動量の詳細は
         <Link to="/dog" className="mx-1 font-medium text-primary underline-offset-2 hover:underline">
           プロフィール
         </Link>
-        から変更できます。
+        からも変えられます。目標・体重・食事回数はこの画面の「プランを変更」から保存できます。
       </p>
     </AppShell>
   );
