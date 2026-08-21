@@ -1,0 +1,89 @@
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f3efe7;
+  --color-surface: #fcfaf6;
+  --color-surface-2: #e9e2d6;
+  --color-ink: #1f1b16;
+  --color-fg: #1f1b16;
+  --color-muted: #6f675c;
+  --color-subtle: #9a9286;
+  --color-primary: #3d5a4c;
+  --color-primary-fg: #f7f4ee;
+  --color-primary-soft: #dce6df;
+  --color-border: #ddd4c6;
+  --color-ok: #3d5a4c;
+  --color-warn: #9a6b2f;
+  --color-danger: #8f3d34;
+  --color-ring-track: #e4dccf;
+  --color-over: #8f3d34;
+
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-sans: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  --shadow-card: 0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 10px 28px -18px color-mix(in oklab, var(--color-ink) 28%, transparent);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.55;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
